@@ -46,11 +46,11 @@ while(True) :	# the script
 	
 			driver.get("https://www.facebook.com")	# go to facebook.com
 
-			email = driver.find_element_by_name("email")	# search email textbox
+			email = driver.find_element("name", "email")  # search email textbox
 			email.send_keys(nme)	# enter email / username = nme
 			email.send_keys(Keys.TAB)	# probably useless, TEST IT!!!
 
-			password = driver.find_element_by_name("pass")	# search password textbox
+			password = driver.find_element("name", "pass")  # search password textbox
 
 			password.send_keys(psswrd)	# enter password
 			password.send_keys(Keys.RETURN)	# RETURN
