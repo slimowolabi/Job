@@ -16,26 +16,26 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
 
 def open_browser():
-driver = None
+    driver = None
 
-try:
-    driver = webdriver.Firefox()
-    driver.get("https://www.facebook.com/")
+    try:
+        driver = webdriver.Firefox()
+        driver.get("https://www.facebook.com/")
 
-    print(OKGREEN + "Firefox opened successfully." + ENDC)
-    print(WARNING + "Log in manually in Firefox." + ENDC)
+        print(OKGREEN + "Firefox opened successfully." + ENDC)
+        print(WARNING + "Log in manually in Firefox." + ENDC)
 
-    input("After logging in, press Enter in Termux...")
+        input("After logging in, press Enter in Termux...")
 
-    return driver
+        return driver
 
-except WebDriverException as error:
-    print(FAIL + "Browser error: " + str(error) + ENDC)
+    except WebDriverException as error:
+        print(FAIL + "Browser error: " + str(error) + ENDC)
 
-    if driver is not None:
-        driver.quit()
+        if driver is not None:
+            driver.quit()
 
-    return None
+        return None
 
 
 
