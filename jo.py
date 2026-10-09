@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import time
-HEADER = '\033[95m' # colours
+
+HEADER = '\033[95m'
 OKBLUE = '\033[94m'
 OKGREEN = '\033[92m'
 WARNING = '\033[93m'
@@ -10,85 +11,108 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
-from selenium import webdriver # selenium setup
+from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException
-driver = webdriver.Firefox()
+from selenium.common.exceptions import WebDriverException
+
+def open_browser():
+driver = None
+
+try:
+    driver = webdriver.Firefox()
+    driver.get("https://www.facebook.com/")
+
+    print(OKGREEN + "Firefox opened successfully." + ENDC)
+    print(WARNING + "Log in manually in Firefox." + ENDC)
+
+    input("After logging in, press Enter in Termux...")
+
+    return driver
+
+except WebDriverException as error:
+    print(FAIL + "Browser error: " + str(error) + ENDC)
+
+    if driver is not None:
+        driver.quit()
+
+    return None
 
 
 
 
-def help():		# help function, to lazy to type it ever again :)
-	print(OKBLUE + "start : Start the script." + ENDC)
-	print(OKBLUE + "version : Version." + ENDC)
-	print(OKBLUE + "exit : Exit." + ENDC)
-	print(OKBLUE + "info : Info." + ENDC)
-	print(OKBLUE + "clear : Clear console." + ENDC)
-	print(OKBLUE + "help : This help message." + ENDC)
+def help():
+    print(OKBLUE + "start : Start the script." + ENDC)
+    print(OKBLUE + "version : Version." + ENDC)
+    print(OKBLUE + "exit : Exit." + ENDC)
+    print(OKBLUE + "info : Info." + ENDC)
+    print(OKBLUE + "clear : Clear console." + ENDC)
+    print(OKBLUE + "help : This help message." + ENDC)
+
 
 tool = "friends@py:~# "
-n = "\n" # simply shorter
-cycle = True;
+n = "\n"
 
 
+def start():
+    driver = open_browser()
+
+    if driver is None:
+        return
+
+    try:
+        links = []
+
+        print(OKGREEN + "\nEnter the Facebook profile links." + ENDC)
+        print("Type DONE when you have entered all the links.\n")
+
+        while True:
+            link = input("Enter profile link: ").strip()
+
+            if link.lower() == "done":
+                break
+
+            if link.startswith("https://"):
+                links.append(link)
+                print(OKGREEN + "Link saved." + ENDC)
+            else:
+                print(FAIL + "Enter a full HTTPS profile link." + ENDC)
+
+        for i, link in enumerate(links, start=1):
+            print(OKBLUE + f"Opening profile {i} of {len(links)}..." + ENDC)
+            driver.get(link)
+
+            input(
+                "Review the profile and send a friend request manually "
+                "if appropriate. Press Enter for the next profile..."
+            )
+
+        print(OKGREEN + "Finished reviewing all profiles." + ENDC)
+
+    finally:
+        driver.quit()
 
 
-while(True) :	# the script
-	c = input(OKGREEN + tool + ENDC)	# command-line-like interface
-	if (c == "start"):
-		x = input(BOLD + "Number of friends to add: " + ENDC)	# number of friends to add
-		cf = x # ugly way to count
+while True:
+    command = input(OKGREEN + tool + ENDC).strip().lower()
 
-		while(cycle == True) :
+    if command == "start":
+        start()
 
-			nme = input("Your facebook username/email: ")	# facebook email / username
-			psswrd = input("Your Facebook password: ")	# facebook password
-	
-			driver.get("https://www.facebook.com")	# go to facebook.com
+    elif command == "version":
+        print("Version 2.0")
 
-			email = driver.find_element("name", "email")  # search email textbox
-			email.send_keys(nme)	# enter email / username = nme
-			email.send_keys(Keys.TAB)	# probably useless, TEST IT!!!
+    elif command == "exit":
+        print("Exiting...")
+        break
 
-			password = driver.find_element("name", "pass")  # search password textbox
+    elif command == "info":
+        print("Opens Facebook profile links for manual review.")
 
-			password.send_keys(psswrd)	# enter password
-			password.send_keys(Keys.RETURN)	# RETURN
-			try:
-				driver.find_element_by_id('u_0_e').click()	# find Home-button and click it
-				cycle = False;
-				break;
-			except NoSuchElementException: # if password and/or username are incorrect
-				print(FAIL + "Your username and/or password appear to be incorrect" + ENDC)
-				driver.get("https://www.facebook.com")
-				cycle = True;
+    elif command == "clear":
+        print("\033[2J\033[H", end="")
 
-		time.sleep(4)	# wait, probably useless, TEST IT!!!
-	
-		for i in range (x):
-			try:
-				driver.find_element_by_partial_link_text('Add Friend').click()	# clicks Add Friend
-				driver.get("https://www.facebook.com") # reloads : facebook will not think that the script is a bot + time delay (new friends appear)
-				print(UNDERLINE + "Friend number " + OKBLUE + str(i) + ENDC + UNDERLINE + " has been added." + ENDC) # reports
-			except NoSuchElementException: # if button not found
-				time.sleep(8)	# wait (in hope that new Add Friend-buttons will appear)
-				print(FAIL + "Error, friend couldn't been added" + ENDC) # report
-				cf = cf -1 # loses one friend
-				driver.get('https://www.facebook.com') # reload to check if new friends appeared
+    elif command in ("help", "h"):
+        help()
 
-		print(OKGREEN + "You have succesfully added " + str(cf) + " friends \n" + ENDC) # reports how many friends were succesfully added
-		driver.close()	# clothes firefox window
-	elif(c == "exit"):	# if user wants to exit
-		print(FAIL + "Exiting...")	# report
-		driver.close()	# close firefox window
-		quit()	# exit this script
-	elif(c == "version"):	# if user want to know the version number
-		print('Version 1.1 \n')	# version
-	elif(c == "info"):	# if user want info
-		print("""This script is a simple facebook friend-request sender, it is still in development. If you wish to help or give an advice or an idea, you are welcome at """ +  OKBLUE + UNDERLINE + """https://gist.github.com/RRobotek/6619b5ca6948f1f49ae3\n""" +  ENDC + """Cheers, RRobotek \n""")
-	elif(c == "clear"): # clear
-		print(n * 64)	# 64 new lines
-	elif(c == "help" or c == "H" or c == "h" or c == "HELP" or c == "Help"):	# help
-		help()	# function above is used
-	else:	# if command not recognized
-		print(FAIL + "Command not recognized..." + ENDC)
+    else:
+        print(FAIL + "Command not recognized. Type help." + ENDC)
